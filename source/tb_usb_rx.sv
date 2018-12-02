@@ -27,15 +27,15 @@ logic                  tb_check;
 integer                tb_i;
 
 //****************************************************************************
-// Expected values 
+// Expected values
 //****************************************************************************
-logic [7:0] expected_rx_packet_data;  
+logic [7:0] expected_rx_packet_data;
 logic expected_store_rx_packet_data;
-logic expected_flush; 
-logic expected_rx_error; 
-logic expected_rx_transfer_active; 
-logic expected_rx_data_ready; 
-logic [3:0] expected_rx_packet;  
+logic expected_flush;
+logic expected_rx_error;
+logic expected_rx_transfer_active;
+logic expected_rx_data_ready;
+logic [3:0] expected_rx_packet;
 
 //*****************************************************************************
 // USB RX input signals
@@ -153,47 +153,47 @@ begin
       (tb_test_packet.pid == IN)    |
       (tb_test_packet.pid == DATA0) |
       (tb_test_packet.pid == DATA1)) begin
-      send_data(tb_test_packet.data_packet, tb_test_packet.data_packet_byte_size, 
+      send_data(tb_test_packet.data_packet, tb_test_packet.data_packet_byte_size,
                 tb_test_packet.test_name);
       send_crc(tb_test_packet.crc, tb_test_packet.pid);
   end
 
-  // updating expected values before checking outputs 
-  expected_rx_error = 1'b0; 
+  // updating expected values before checking outputs
+  expected_rx_error = 1'b0;
   // if the buffer is empty
-  if (buffer_occupancy == 7'd0) begin 
-      expected_flush = 1'b0; 
-  end 
-  else begin 
+  if (buffer_occupancy == 7'd0) begin
+      expected_flush = 1'b0;
+  end
+  else begin
       expected_flush = 1'b1;
-  end  
-  expected_rx_transfer_active = 1'b1; 
+  end
+  expected_rx_transfer_active = 1'b1;
   expected_store_rx_packet_data = 1'b1;
 
-  // check outputs to make sure the transfer active signal is high 
-  check_outputs(tb_test_packet.test_name); 
+  // check outputs to make sure the transfer active signal is high
+  check_outputs(tb_test_packet.test_name);
 
   // send EOP
   send_eop();
 
-  // updating expected values before checking again 
-  expected_rx_packet = tb_test_packet.pid; 
-  expected_rx_data_ready = 1'b1;  
+  // updating expected values before checking again
+  expected_rx_packet = tb_test_packet.pid;
+  expected_rx_data_ready = 1'b1;
 
   // check outputs again for verifing rest of signals
-  check_outputs(tb_test_packet.test_name); 
+  check_outputs(tb_test_packet.test_name);
 
 end
 endtask
 
-// task for checking all of the output signals 
+// task for checking all of the output signals
 task check_outputs;
-  input test_case_name; 
+  input test_case_name;
 begin
-  // wait a little bit to allow outputs to settl 
-  #(1); 
+  // wait a little bit to allow outputs to settl
+  #(1);
 
-  // checking rx_packet data expected value 
+  // checking rx_packet data expected value
   if(tb_rx_packet_data != expected_rx_packet_data) begin
     $error("Test Case #%s has wrong rx_packet_data", tb_test_case_name);
   end
@@ -203,32 +203,32 @@ begin
     $error("Test Case #%s has wrong store_rx_packet_data", tb_test_case_name);
   end
 
-  // checking flush signal 
+  // checking flush signal
   if(tb_flush != expected_flush) begin
     $error("Test Case #%s has wrong flush signal", tb_test_case_name);
   end
 
-  // checking rx_error signal  
+  // checking rx_error signal
   if(tb_rx_error != expected_rx_error) begin
     $error("Test Case #%s has wrong rx_error signal", tb_test_case_name);
   end
 
-  // checking rx_transfer_active signal  
+  // checking rx_transfer_active signal
   if(tb_rx_transfer_active != expected_rx_transfer_active) begin
     $error("Test Case #%s has wrong rx_transfer_active signal", tb_test_case_name);
   end
 
-  // checking rx_data_ready signal  
+  // checking rx_data_ready signal
   if(tb_rx_data_ready != expected_rx_data_ready) begin
     $error("Test Case #%s has wrong rx_data_ready signal", tb_test_case_name);
   end
 
-  // checking expected_rx_packet signal  
+  // checking expected_rx_packet signal
   if(tb_rx_packet != expected_rx_packet) begin
     $error("Test Case #%s has wrong rx_packet signal", tb_test_case_name);
   end
-end 
-endtask 
+end
+endtask
 
 // sends a sync byte
 task send_sync;
@@ -262,7 +262,7 @@ endtask
 task send_data;
   input data_packet;
   input data_packet_byte_size;
-  input test_name; 
+  input test_name;
 begin
   // variables for indexing through bytes
   int size;
@@ -273,9 +273,9 @@ begin
   // loop through all of the data packet bytes and then all of the bits
   //for that individual byte
   for (int p = 0; p < size; p++) begin
-    // reset the expected store_rx_packet_data signla 
-    expected_store_rx_packet_data = 1'b0; 
-    expected_rx_packet_data = 8'd0; 
+    // reset the expected store_rx_packet_data signla
+    expected_store_rx_packet_data = 1'b0;
+    expected_rx_packet_data = 8'd0;
 
     //loop through alll of the bits for current packet
     for (int i = 0; i < 8; i++)begin
@@ -286,7 +286,7 @@ begin
         // don't count this as a data bit
         i--;
         // reset the idle bit counter
-        bit_idle_counter = 0; 
+        bit_idle_counter = 0;
       end
       else begin // haven't sent 6 idle 1's
         // send the current bit
@@ -301,17 +301,17 @@ begin
         end
 
         // check to make sure the store_rx_packet_data signal is 0
-        check_outputs(test_name); 
+        check_outputs(test_name);
       end
     end
 
-    //update expected values 
+    //update expected values
     expected_rx_packet_data = data_packet[p];
     expected_store_rx_packet_data = 1'b1;
 
-    // check the individual packet 
-    check_outputs(test_name); 
-    
+    // check the individual packet
+    check_outputs(test_name);
+
   end
 end
 endtask
@@ -397,18 +397,40 @@ endtask
 //*****************************************************************************
 initial begin
   // test vector initializations
-  tb_test_packets = new[1]
+  tb_test_packets = new[3]
 
   // first test case/test-vector
-  tb_test_case[0].test_name = "Zeros Check";
+  tb_test_case[0].test_name = "2 byte message";
   tb_test_case[0].data_packet_byte_size = 6'd2;
+
+  tb_test_case[0].data_packet[i] = 8'd25;
+  tb_test_case[1].data_packet[i] = 8'd15;
+
+  tb_test_case[0].pid = OUT;
+  tb_test_case[0].crc = 16'd8246;
+
+  // second test case/test-vector
+  tb_test_case[1].test_name = "3 byte message";
+  tb_test_case[1].data_packet_byte_size = 6'd3;
   for (int i=0; i<64; i++) begin
-    if (i < 2) begin
-      tb_test_case[0].data_packet[i] = i[7:0];
+    if (i < 3) begin
+      tb_test_case[1].data_packet[i] = i[7:0];
     end
   end
-  tb_test_case[0].pid = OUT;
-  tb_test_case[0].crc = 16'd0;
+  tb_test_case[1].pid = OUT;
+  tb_test_case[1].crc = 16'd2;
+
+  // third test case/test-vector
+  tb_test_case[2].test_name = "4 byte message";
+  tb_test_case[2].data_packet_byte_size = 6'd4;
+  for (int i=0; i<64; i++) begin
+    if (i < 4) begin
+      tb_test_case[1].data_packet[i] = i[7:0];
+    end
+  end
+  tb_test_case[2].pid = OUT;
+  tb_test_case[2].crc = 16'd0;
+
   // Initialize Test Case Navigation Signals
   tb_test_case       = "Initialization";
   tb_test_case_num   = -1;
@@ -432,14 +454,14 @@ initial begin
   for (tb_test_case_num = 0; tb_test_case_num < tb_test_packets.size(); tb_test_case_num++) begin
     // Reset the DUT
     reset_dut();
-    // setting expected values 
-    expected_rx_packet_data = 8'd0;  
+    // setting expected values
+    expected_rx_packet_data = 8'd0;
     expected_store_rx_packet_data = 1'b0;
-    expected_flush = 1'b0; 
-    expected_rx_error = 1'b0; 
-    expected_rx_transfer_active = 1'b0; 
-    expected_rx_data_ready = 1'b0; 
-    expected_rx_packet = 4'd0; 
+    expected_flush = 1'b0;
+    expected_rx_error = 1'b0;
+    expected_rx_transfer_active = 1'b0;
+    expected_rx_data_ready = 1'b0;
+    expected_rx_packet = 4'd0;
     // reset the d_minus and d_plus back to their idle states
     set_data_lines_to_idle();
     // Update the test name
