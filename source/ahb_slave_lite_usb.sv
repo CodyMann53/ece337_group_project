@@ -139,6 +139,7 @@ begin: ERROR_OUTPUT_LOGIC
 					hresp = 1'b1; 
 					hready = 1'b0; 
 				end 
+			end 
 			else if ( (haddr > 4'h8) & (haddr < 4'hC)) begin 
 					hready = 1'b0; 
 					hresp = 1'b1; 
