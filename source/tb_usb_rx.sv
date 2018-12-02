@@ -14,6 +14,7 @@ module tb_usb_rx();
 localparam CLK_PERIOD = 10;
 localparam TEST_DELAY = 10;
 localparam BUS_DELAY  = 800ps; // Based on FF propagation delay
+localparam USB_DATA_PERIOD = 83.3ns // data rate should be 12 MHZ
 
 //****************************************************************************
 // Test bench information signals
@@ -340,16 +341,16 @@ end
 endtask
 
 // send the EOP to signify done with a packet
-task send_eop
+task send_eop;
 begin
   // get away from the rising clock edge
   @(negedge tb_clk)
   // bring both d_minus and d_plus low
   tb_dplus_in = 1'b0;
   tb_dminus_in = 1'b0;
-  // wait two clock cycles
-  @(posedge tb_clk);
-  @(posedge tb_clk);
+  // wait two data rate periods 
+  #(USB_DATA_PERIOD);
+  #(USB_DATA_PERIOD);
   // get away from the rising clock edge
   @(negedge tb_clk)
   // bring d_minus and d_plus back to thier idle state
@@ -406,7 +407,7 @@ initial begin
   tb_test_case[0].data_packet[i] = 8'd0;
   tb_test_case[1].data_packet[i] = 8'd1;
 
-  tb_test_case[0].pid = OUT;
+  tb_test_case[0].pid = DATA0;
   tb_test_case[0].crc = 16'd26;
 
   // second test case/test-vector
@@ -417,7 +418,7 @@ initial begin
       tb_test_case[1].data_packet[i] = i[7:0];
     end
   end
-  tb_test_case[1].pid = OUT;
+  tb_test_case[1].pid = DATA0;
   tb_test_case[1].crc = 16'd32877;
 
   // third test case/test-vector
@@ -428,7 +429,7 @@ initial begin
       tb_test_case[1].data_packet[i] = i[7:0];
     end
   end
-  tb_test_case[2].pid = OUT;
+  tb_test_case[2].pid = DATA0;
   tb_test_case[2].crc = 16'd33165;
 
   // Initialize Test Case Navigation Signals

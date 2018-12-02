@@ -53,6 +53,14 @@ typedef enum logic [1:0] {IDLE,
 state_type st;
 assign st = state;
 
+// declaring data types for packet type
+typedef enum logic [1:0] {IDLE,
+                          TRANSFER,
+                        }
+						flush_buff_type;
+
+state_type buffStateNext, buffState;
+
 typedef enum logic [3:0] {BUFFER4,
                           BUFFER3,
                           BUFFER2,
@@ -90,6 +98,45 @@ reg [6:0] buffer_occup_reg;
 assign d_mode = tx_transfer_active;
 
 /* NEXT STATE LOGIC MODULE CODE */
+
+always_comb
+begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
+
+  buffStateNext = buffState; 
+
+  case(buffState)
+
+  	IDLE: begin 
+
+  		if (flush_buffer_reg != 1'b0) begin 
+
+  			buffStateNext = TRANSFER; 
+
+  		end 
+  		else begin  
+
+  			buffStateNext = IDLE; 
+
+  		end 
+  	end 
+
+  	TRANSFER: begin 
+
+  		if ( flush_buffer_reg == 1'b0) begin 
+
+  			buffStateNext = IDLE; 
+
+  		end 
+  		else begin 
+
+  			buffStateNext = TRANSFER; 
+
+  		end 
+  	end 
+  endcase 
+end
+
+
 always_comb
 begin: FLUSH_BUFFER_CONTROL_REGISTER_NEXT_STATE_LOGIC
 
@@ -386,6 +433,25 @@ begin: DATA_BUFFER_OUTPUT_LOGIC
 	endcase
 end
 
+
+always_comb
+begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
+
+  clear_buffer_control = 1'b0; 
+  clear = 1'b0; 
+
+  case(buffState)
+
+  	TRANSFER: begin 
+
+  		clear = 1'b1; 
+  		clear_buffer_control = 1'b1; 
+
+  	end 
+  endcase // buffState
+end
+
+
 /*REGISTER MODULE CODE */
 always_ff @ (posedge clk, negedge n_rst)
 begin: REGISTER_LOGIC
@@ -405,6 +471,21 @@ begin: REGISTER_LOGIC
 	    tx_control_reg <= tx_control_reg_next;
 	    flush_buff_reg <= flush_buffer_reg_next;
 	    rx_data_reg <= rx_data_next;
+	end
+end
+
+always_ff @ (posedge clk, negedge n_rst)
+begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_REGISTER
+	// if reset negation is applied
+	if (1'b0 == n_rst ) begin
+
+    	buffState <= IDLE;
+
+	end
+	else begin
+
+    	buffState <= buffStateNext; 
+
 	end
 end
 
