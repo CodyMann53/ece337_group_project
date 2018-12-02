@@ -6,14 +6,14 @@ z = (y << x.bit_length()) | x
 
 #the message to be sent should be an integer and not a string
 def calc_crc_token(message):
-    #define the generating function (poly x^5 + x^2 + 1)
-    poly = 0b100101
+    #define the generating function (poly x^16 + x^15 + x^2 + 1)
+    poly = 0b11000000000000101
 
     #6 bit operation register, initialized to all ones
-    reg = 0b111111
+    reg = 0b11111111111111111
 
     #defining the mask to check if msb in shift register bit
-    mask = 0b100000
+    mask = 0b10000000000000000
 
     #for every bit in message
     for x in bin(message)[2:]:
@@ -39,8 +39,33 @@ def calc_crc_token(message):
             #update reg
             reg = (reg << 1 ) | 0
 
-        #shift off the msb to keep it 6 bits
-        reg = 0b111111 & reg
+        #shift off the msb to keep it 17 bits
+        reg = 0b11111111111111111 & reg
 
     #return the crc
     return reg
+
+#builes a message up based on a list of bytes to send
+def build_message(byte_list):
+
+    #Initialize message to zero
+    message = 0;
+
+    #loop through all of the byte_list
+    for byte in byte_list:
+
+        #add the byte to the message
+        message = (byte << message.bit_length()) | message
+
+    return message
+
+
+
+byte_list = {1}
+message = build_message(byte_list)
+
+
+crc = calc_crc_token(message << 16)
+print(bin(crc))
+message = (message << 16) | crc
+print( calc_crc_token(message) )
