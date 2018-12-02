@@ -99,7 +99,7 @@ begin: NEXT_STATE_LOGIC
 				nextState = DATA_TRANSFER; 
 			end 
 			else if ((hsel == 1'b0) | (htrans == 2'd0)) begin 
-				nextState = IDLE: 
+				nextState = IDLE;
 			end 
 		end 
 
@@ -130,16 +130,16 @@ begin: ERROR_OUTPUT_LOGIC
 	case(state)
 
 		IDLE: begin 
-			if (haddr > 0xD) begin 
+			if (haddr > 4'hD) begin 
 				hresp = 1'b1; 
 				hready = 1'b0; 
 			end 
 			else if (hwrite == 1'b1) begin 
-				if ( (haddr >= 0x4 ) & (haddr < 0xC)) begin 
+				if ( (haddr >= 4'h4 ) & (haddr < 4'hC)) begin 
 					hresp = 1'b1; 
 					hready = 1'b0; 
 				end 
-			else if ( (haddr > 0x8) & (haddr < 0xC)) begin 
+			else if ( (haddr > 4'h8) & (haddr < 4'hC)) begin 
 					hready = 1'b0; 
 					hresp = 1'b1; 
 			end 
