@@ -8,7 +8,7 @@
 
 `timescale 1ns / 10ps
 
-module tb_ahb_lite_slave_cdl();
+module tb_usb_rx();
 
 // Timing related constants
 localparam CLK_PERIOD = 10;
