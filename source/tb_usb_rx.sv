@@ -403,11 +403,11 @@ initial begin
   tb_test_case[0].test_name = "2 byte message";
   tb_test_case[0].data_packet_byte_size = 6'd2;
 
-  tb_test_case[0].data_packet[i] = 8'd25;
-  tb_test_case[1].data_packet[i] = 8'd15;
+  tb_test_case[0].data_packet[i] = 8'd0;
+  tb_test_case[1].data_packet[i] = 8'd1;
 
   tb_test_case[0].pid = OUT;
-  tb_test_case[0].crc = 16'd8246;
+  tb_test_case[0].crc = 16'd26;
 
   // second test case/test-vector
   tb_test_case[1].test_name = "3 byte message";
@@ -418,7 +418,7 @@ initial begin
     end
   end
   tb_test_case[1].pid = OUT;
-  tb_test_case[1].crc = 16'd2;
+  tb_test_case[1].crc = 16'd32877;
 
   // third test case/test-vector
   tb_test_case[2].test_name = "4 byte message";
@@ -429,7 +429,7 @@ initial begin
     end
   end
   tb_test_case[2].pid = OUT;
-  tb_test_case[2].crc = 16'd0;
+  tb_test_case[2].crc = 16'd33165;
 
   // Initialize Test Case Navigation Signals
   tb_test_case       = "Initialization";
