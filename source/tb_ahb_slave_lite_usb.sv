@@ -89,7 +89,7 @@ logic [((DATA_WIDTH*16) - 1):0]        tb_hwdata;
 
 //AHB INPUTS FROM DATA BUFFER
 logic [(BUFFER_OCCUPANCY_WIDTH - 1):0] tb_buffer_occupancy;
-logic [(RX_TX_DATA_WIDTH) - 1):0]      tb_rx_data;
+logic [(RX_TX_DATA_WIDTH - 1):0]      tb_rx_data;
 
 //AHB INPUTS FROM RX
 logic [(RX_DATA_WIDTH - 1):0]          tb_rx_packet;
@@ -166,7 +166,7 @@ ahb_lite_bus_cdl
                   .hwrite(tb_hwrite),
                   .hwdata(tb_hwdata),
                   .hrdata(tb_hrdata),
-                  .hresp(tb_hresp)
+                  .hresp(tb_hresp),
 		  .hready(tb_hready));
 
 
@@ -243,12 +243,12 @@ logic [(DATA_WIDTH - 1):0]	       tb_expected_tx_data;
 logic [1:0]			       tb_expected_tx_packet;
 logic				       tb_expected_clear;
 */
-  if(tb_expected_rx_data == tb_rx_data) begin // Check passed
-    $info("Correct 'rx_data' output %s during %s test case", check_tag, tb_test_case);
+  if(tb_expected_get_rx_data == tb_get_rx_data) begin // Check passed
+    $info("Correct 'get_rx_data' output %s during %s test case", check_tag, tb_test_case);
   end
   else begin // Check failed
     tb_mismatch = 1'b1;
-    $error("Incorrect 'rx_data' output %s during %s test case", check_tag, tb_test_case);
+    $error("Incorrect 'get_rx_data' output %s during %s test case", check_tag, tb_test_case);
   end
 
   if(tb_expected_store_tx_data == tb_store_tx_data) begin // Check passed
@@ -393,9 +393,12 @@ initial begin
   tb_test_case_num = tb_test_case_num + 1;
   
   // Setup FIR Filter provided signals with 'active' values for reset check
-  tb_fir_out = '1;
-  tb_modwait = 1'b1;
-  tb_err     = 1'b1;
+  tb_get_rx_data = 'd1;
+  tb_store_tx_data = 'd1;
+  tb_tx_data = 'd1;
+  tb_tx_packet = 'd1;
+  tb_clear = 'd1;
+
 
   // Reset the DUT
   reset_dut();
@@ -544,3 +547,5 @@ initial begin
   tb_expected_coeff      = tb_test_data;
   check_outputs("after attempting to activate load and check SR");
 */
+end
+endmodule
