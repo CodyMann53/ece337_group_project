@@ -65,7 +65,7 @@ parameter [1:0]          ACK_TX = 2'd0,
 // declaring constants for state input 
 parameter [1:0]  IDLE = 2'd0,
                  DATA_TRANSFER = 2'd1, 
-                 ERROR = 2'd2; 
+                 ERR = 2'd2; 
 
 
 
@@ -175,7 +175,7 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
 
   status_reg_next = status_reg;
 
-  if ( (rx_data_ready == 1'b1) & ((rx_packet == DATA0) | (rx_packet == DATA1)) begin
+  if ( (rx_data_ready == 1'b1) & ((rx_packet == DATA0) | (rx_packet == DATA1)) ) begin
     status_reg_next[0] = 1'b1;
   end
   else if ( (status_reg == 1'b1) & (buffer_occupancy == 1'b0) ) begin
