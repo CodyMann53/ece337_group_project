@@ -26,7 +26,7 @@ parameter [3:0] {BUFFER4 = 4'd0,
                  ERROR_UPPER = 4'd9,
                  TX_CONTROL = 4'd10,
                  FLUSH_BUFFER = 4'd11, 
-                 BUFFER_OCCUP = 4'd12;}
+                 BUFFER_OCCUP = 4'd12}; 
 
 
 
