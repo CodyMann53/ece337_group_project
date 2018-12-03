@@ -8,7 +8,7 @@
 
 `timescale 1ns / 10ps
 
-module tb_ahb_lite_slave_usb();
+module tb_ahb_slave_lite_usb();
 
 // Timing related constants
 localparam CLK_PERIOD = 10;
@@ -49,13 +49,13 @@ localparam ADDR_FLUSH_BUFFER = 4'd13;
 // Declare TB Signals (Bus Model Controls)
 //*****************************************************************************
 // Testing setup signals
-logic                          tb_enqueue_transaction;
-logic                          tb_transaction_write;
-logic                          tb_transaction_fake;
-logic [(ADDR_WIDTH - 1):0]     tb_transaction_addr;
-logic [((DATA_WIDTH*8) - 1):0] tb_transaction_data [];
-logic                          tb_transaction_error;
-logic [2:0]                    tb_transaction_size;
+bit                          tb_enqueue_transaction;
+bit                          tb_transaction_write;
+bit                          tb_transaction_fake;
+bit [(ADDR_WIDTH - 1):0]     tb_transaction_addr;
+bit [15:0]		       tb_transaction_data [];
+bit                          tb_transaction_error;
+bit [1:0]                    tb_transaction_size;
 // Testing control signal(s)
 logic    tb_enable_transactions;
 integer  tb_current_transaction_num;
@@ -64,7 +64,7 @@ logic    tb_model_reset;
 
 string   tb_test_case;
 integer  tb_test_case_num;
-logic [DATA_MAX_BIT:0] tb_test_data [];
+logic [DATA_MAX_BIT:0] tb_test_data;
 string                 tb_check_tag;
 logic                  tb_mismatch;
 logic                  tb_check;
@@ -83,9 +83,9 @@ logic tb_n_rst;
 logic                                  tb_hsel;
 logic [1:0]                            tb_htrans;
 logic [(ADDR_WIDTH - 1):0]             tb_haddr;
-logic [(DATA_WIDTH - 1):0]             tb_hsize;
+logic [1:0]		               tb_hsize;
 logic                                  tb_hwrite;
-logic [((DATA_WIDTH*16) - 1):0]        tb_hwdata;
+logic [31:0]       		       tb_hwdata;
 
 //AHB INPUTS FROM DATA BUFFER
 logic [(BUFFER_OCCUPANCY_WIDTH - 1):0] tb_buffer_occupancy;
@@ -102,7 +102,7 @@ logic				       tb_tx_transfer_active;
 logic				       tb_tx_error;
 
 //AHB OUTPUTS
-logic [((DATA_WIDTH*16) - 1):0]        tb_hrdata;
+logic [31:0]			       tb_hrdata;
 logic                                  tb_hresp;
 logic			               tb_hready;
 logic			               tb_d_mode;
@@ -142,8 +142,8 @@ end
 // Bus Model Instance
 //*****************************************************************************
 ahb_lite_bus_cdl
-	      #(      .DATA_WIDTH(4),
-		      .ADDR_WIDTH(8))
+	      #(      .DATA_WIDTH(2),
+		      .ADDR_WIDTH(4))
 		 BFM (.clk(tb_clk),
                   // Testing setup signals
                   .enqueue_transaction(tb_enqueue_transaction),
@@ -156,8 +156,6 @@ ahb_lite_bus_cdl
                   // Testing controls
                   .model_reset(tb_model_reset),
                   .enable_transactions(tb_enable_transactions),
-                  .current_transaction_num(tb_current_transaction_num),
-                  .current_transaction_error(tb_current_transaction_error),
                   // AHB-Lite-Slave Side
                   .hsel(tb_hsel),
                   .htrans(tb_htrans),
@@ -173,7 +171,7 @@ ahb_lite_bus_cdl
 //*****************************************************************************
 // DUT Instance
 //*****************************************************************************
-ahb_lite_slave_bus DUT (.clk(tb_clk), .n_rst(tb_n_rst),
+ahb_slave_lite_usb DUT (.clk(tb_clk), .n_rst(tb_n_rst),
                         // AHB-Lite-Slave USB Inputs
                         .hsel(tb_hsel),
                         .htrans(tb_htrans),
@@ -199,7 +197,7 @@ ahb_lite_slave_bus DUT (.clk(tb_clk), .n_rst(tb_n_rst),
 		    	.d_mode(tb_d_mode),
 			// AHB-Lite-Slave USB Outputs To Data Buffer
 			.get_rx_data(tb_get_rx_data),
-			.store_rx_data(tb_store_rx_data),
+			.store_tx_data(tb_store_tx_data),
 			.tx_data(tb_tx_data),
 			.clear(tb_clear),
 			// AHB-Lite-Slave USB Outputs To TX
@@ -303,12 +301,12 @@ endtask
 
 // Task to enqueue a new transaction
 task enqueue_transaction;
-  input logic for_dut;
-  input logic write_mode;
-  input logic [ADDR_MAX_BIT:0] address;
-  input logic [DATA_MAX_BIT:0] data [];
-  input logic expected_error;
-  input logic [1:0] size;
+  input bit for_dut;
+  input bit write_mode;
+  input bit [ADDR_MAX_BIT:0] address;
+  input bit [15:0] data [];
+  input bit expected_error;
+  input bit [1:0] size;
 begin
   // Make sure enqueue flag is low (will need a 0->1 pulse later)
   tb_enqueue_transaction = 1'b0;
@@ -362,7 +360,7 @@ initial begin
   // Initialize Test Case Navigation Signals
   tb_test_case       = "Initilization";
   tb_test_case_num   = -1;
-  tb_test_data       = new[1];
+  tb_test_data       = '0;
   tb_check_tag       = "N/A";
   tb_check           = 1'b0;
   tb_mismatch        = 1'b0;

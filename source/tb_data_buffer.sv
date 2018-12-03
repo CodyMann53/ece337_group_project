@@ -150,19 +150,6 @@ begin
 end
 endtask
 
-//*****************************************************************************
-// Bus Model Usage Related TB Tasks
-//*****************************************************************************
-// Task to pulse the reset for the bus model
-task reset_model;
-begin
-  tb_model_reset = 1'b1;
-  #(0.1);
-  tb_model_reset = 1'b0;
-end
-endtask
-
-
 
 //*****************************************************************************
 //*****************************************************************************
@@ -194,7 +181,7 @@ initial begin
   //*****************************************************************************
   // Update Navigation Info
   tb_test_case     = "Power-on-Reset";
-  tb_test_case_num = tb_test_case_num + 1;
+  tb_test_num = tb_test_num + 1;
   
   // Setup provided signals with 'active' values for reset check
   tb_tx_packet_data = 8'd32;

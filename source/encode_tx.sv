@@ -11,11 +11,13 @@ module encode(
 	input wire n_rst,
 	input wire [7:0] tx_data,
 	input wire tx_enable,
-	input wire encode_busy,
+	input wire eop,
+	input wire eop_end,
+	output reg encode_busy,
 	output wire dplus_out,
 	output wire dminus_out
 );
-	typedef enum logic [3:0] {IDLE, BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7} stateType;
+	typedef enum logic [3:0] {IDLE, BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7, EOP1, EOP2, EOP3} stateType;
 	stateType state;
 	stateType next;
 
@@ -48,7 +50,12 @@ module encode(
 		case(state)
 			IDLE: begin
 				if(tx_enable == 1'b1) begin
-					next = BIT0;
+					if(eop == 1'b1) begin
+						next = EOP1;
+					end
+					else begin
+						next = BIT0;
+					end
 				end
 			end
 			BIT0: begin
@@ -139,6 +146,26 @@ module encode(
 				end
 				encode_busy = 1'b0;
 				next = IDLE;
+			end
+			EOP1: begin
+				if(eop == 1'b1) begin
+					next_dplus_reg = 1'b0;
+					next_dminus_reg = 1'b0;
+					next = EOP2;
+				end
+			end
+			EOP2: begin
+				if(eop == 1'b1) begin
+					next_dplus_reg = 1'b0;
+					next_dminus_reg = 1'b0;
+					next = EOP3;
+				end
+			end
+			EOP3: begin
+				if(eop_end == 1'b1) begin
+					next_dplus_reg <= 1'b1;
+					next_dminus_reg <= ~dminus_reg;
+				end
 			end
 		endcase
 	end
