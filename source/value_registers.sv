@@ -51,6 +51,7 @@ typedef enum logic [1:0] {IDLE,
                         }
 						state_type;
 state_type st;
+state_type txStateNext, txState; 
 assign st = state;
 
 // declaring data types for packet type
@@ -85,7 +86,7 @@ location_type data_state_next, data_state_reg;
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
 reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buffer_reg;
 reg [6:0] buffer_occup_reg;
-reg clear_buffer_control; 
+reg clear_buffer_control, clear_tx_control; 
 
 /*D_MODE output logic */
 assign d_mode = tx_transfer_active;
@@ -123,6 +124,43 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
   		else begin 
 
   			buffStateNext = TRANSFER; 
+
+  		end 
+  	end 
+  endcase 
+end
+
+always_comb
+begin: TX_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
+
+  txStateNext = txState; 
+
+  case(buffState)
+
+  	IDLE: begin 
+
+  		if (tx_control_reg != 1'b0) begin 
+
+  			txStateNext = DATA_TRANSFER; 
+
+  		end 
+  		else begin  
+
+  			txStateNext = IDL; 
+
+  		end 
+  	end 
+
+  	DATA_TRANSFER: begin 
+
+  		if ( tx_control_reg == 1'b0) begin 
+
+  			txStateNext = IDLE; 
+
+  		end 
+  		else begin 
+
+  			txStateNext = DATA_TRANSFER; 
 
   		end 
   	end 
@@ -426,7 +464,6 @@ begin: DATA_BUFFER_OUTPUT_LOGIC
 	endcase
 end
 
-
 always_comb
 begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
 
@@ -442,6 +479,49 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
 
   	end 
   endcase // buffState
+end
+
+always_comb
+begin: TX_CONTROL_STATE_MACHINE_OUTPUT_LOGIC
+
+  clear_tx_control = 1'b0; 
+  tx_packet = 1'b0; 
+
+  case(txState)
+
+	DATA_TRANSFER: begin 
+
+		if (tx_transfer_active == 1'b0) begin 
+
+			case(tx_control_reg) 
+
+				8'd1: begin
+
+					if (buffer_occup_reg > 7'd0) begin 
+
+							tx_packet = DATA; 
+
+					end 
+				end 
+
+				8'd2: begin 
+
+					tx_packet = ACK; 
+				end 
+
+				8'd3: begin 
+
+					tx_packet = NAK; 
+				end 
+
+				8'd4: begin 
+
+					tx_packet = STALL; 
+				end 
+			endcase // tx_control_reg
+		end 
+	end
+  endcase // txState
 end
 
 
@@ -478,6 +558,21 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_REGISTER
 	else begin
 
     	buffState <= buffStateNext; 
+
+	end
+end
+
+always_ff @ (posedge clk, negedge n_rst)
+begin: TX_CONTROL_STATE_MACHINE_REGISTER
+	// if reset negation is applied
+	if (1'b0 == n_rst ) begin
+
+    	txState <= IDLE;
+
+	end
+	else begin
+
+    	txState <= txStateNext; 
 
 	end
 end
