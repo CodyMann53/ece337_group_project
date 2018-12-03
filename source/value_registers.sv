@@ -402,6 +402,7 @@ begin: OUTPUT_LOGIC_READING
 				hrdata = {24'd0, flush_buffer_reg};
 			end
 		endcase
+	end 
 end
 
 always_comb
@@ -468,7 +469,7 @@ begin: DATA_BUFFER_OUTPUT_LOGIC
 end
 
 always_comb
-begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
+begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_OUTPUT_LOGIC
 
   clear_buffer_control = 1'b0; 
   clear = 1'b0; 
