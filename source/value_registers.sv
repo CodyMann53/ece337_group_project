@@ -297,7 +297,7 @@ begin: DATA_BUFFER_STATE_MACHINE_NEXT_STATE_LOGIC
 	// assigning arbitrary values to prevent latches
 	data_state_next = data_state_reg;
 
-	case(data_state_reg) begin
+	case(data_state_reg) 
 
 		IDLE: begin
 			if (st == DATA_TRANSFER) begin
