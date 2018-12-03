@@ -37,7 +37,7 @@ typedef enum logic [2:0] {DATA,
                           INTOKEN,
                           OUTTOKEN,
                           ACK,
-                          NACK
+                          NAK
                         }
 						packet_type;
 
@@ -85,6 +85,7 @@ location_type data_state_next, data_state_reg;
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
 reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buffer_reg;
 reg [6:0] buffer_occup_reg;
+reg clear_buffer_control; 
 
 /*D_MODE output logic */
 assign d_mode = tx_transfer_active;
@@ -208,7 +209,7 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
     status_reg_next[6] = 1'b1;
   end
   else begin
-    status_register[6] = 1'b0;
+    status_reg[6] = 1'b0;
   end
 end
 
