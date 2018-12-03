@@ -13,139 +13,137 @@ module address_decoder(
   output wire [3:0] value_location
 );
 
-typedef enum logic [3:0] {BUFFER4,
-                          BUFFER3,
-                          BUFFER2,
-                          BUFFER1,
-                          STATUS,
-                          STATUS_LOWER,
-                          STATUS_UPPER,
-                          ERROR,
-                          ERROR_LOWER,
-                          ERROR_UPPER,
-                          TX_CONTROL,
-                          FLUSH_BUFFER, 
-                          BUFFER_OCCUP
-                        }
-						location_type;
+// declaring buffer location signals to send as an output 
+parameter [3:0] {BUFFER4 = 4'd0, 
+                 BUFFER3 = 4'd1, 
+                 BUFFER2 = 4'd2, 
+                 BUFFER1 = 4'd3, 
+                 STATUS  = 4'd4, 
+                 STATUS_LOWER = 4'd5, 
+                 STATUS_UPPER = 4'd6, 
+                 ERROR = 4'd7, 
+                 ERROR_LOWER = 4'd8,
+                 ERROR_UPPER = 4'd9,
+                 TX_CONTROL = 4'd10,
+                 FLUSH_BUFFER = 4'd11, 
+                 BUFFER_OCCUP = 4'd12;}
 
-location_type val_loc;
-assign value_location = val_loc;
+
 
 always_comb
 begin: OUTPUT_LOGIC
 
   //creating arbitrary to prevent latches
-  val_loc= ERROR;
+  value_location= ERROR;
 
   case (haddr_reg)
 
     4'h0: begin
       if(hsize_reg >= 4) begin
-        val_loc= BUFFER4;
+        value_location= BUFFER4;
       end
       else if (hsize_reg == 3) begin
-        val_loc= BUFFER3;
+        value_location= BUFFER3;
       end
       else if (hsize_reg == 2) begin
-        val_loc= BUFFER2;
+        value_location= BUFFER2;
       end
       else begin
-        val_loc= BUFFER1;
+        value_location= BUFFER1;
       end
     end
 
     4'h1: begin
       if(hsize_reg >= 4) begin
-        val_loc= BUFFER4;
+        value_location= BUFFER4;
       end
       else if (hsize_reg == 3) begin
-        val_loc= BUFFER3;
+        value_location= BUFFER3;
       end
       else if (hsize_reg == 2) begin
-        val_loc= BUFFER2;
+        value_location= BUFFER2;
       end
       else begin
-        val_loc= BUFFER1;
+        value_location= BUFFER1;
       end
     end
 
     4'h2: begin
       if(hsize_reg >= 4) begin
-        val_loc= BUFFER4;
+        value_location= BUFFER4;
       end
       else if (hsize_reg == 3) begin
-        val_loc= BUFFER3;
+        value_location= BUFFER3;
       end
       else if (hsize_reg == 2) begin
-        val_loc= BUFFER2;
+        value_location= BUFFER2;
       end
       else begin
-        val_loc= BUFFER1;
+        value_location= BUFFER1;
       end
     end
 
     4'h3: begin
       if(hsize_reg >= 4) begin
-        val_loc= BUFFER4;
+        value_location= BUFFER4;
       end
       else if (hsize_reg == 3) begin
-        val_loc= BUFFER3;
+        value_location= BUFFER3;
       end
       else if (hsize_reg == 2) begin
-        val_loc= BUFFER2;
+        value_location= BUFFER2;
       end
       else begin
-        val_loc= BUFFER1;
+        value_location= BUFFER1;
       end
     end
 
     4'h4: begin
       if( hsize_reg >= 2) begin
-        val_loc= STATUS;
+        value_location= STATUS;
       end
       else begin
-        val_loc = STATUS_LOWER;
+        value_location = STATUS_LOWER;
       end
     end
 
     4'h5: begin
       if (hsize_reg >= 2) begin
-        val_loc= STATUS;
+        value_location= STATUS;
       end
       else begin
-        val_loc= STATUS_UPPER;
+        value_location= STATUS_UPPER;
       end
     end
 
     4'h6: begin
       if (hsize_reg >= 2) begin
-        val_loc= ERROR;
+        value_location= ERROR;
       end
       else begin
-        val_loc= ERROR_LOWER;
+        value_location= ERROR_LOWER;
       end
     end
 
     4'h7: begin
       if (hsize_reg >= 2) begin
-        val_loc= ERROR;
+        value_location= ERROR;
       end
       else begin
-        val_loc= ERROR_UPPER;
+        value_location= ERROR_UPPER;
       end
     end
 
     4'h8: begin
-      val_loc = BUFFER_OCCUP;
+      value_location = BUFFER_OCCUP;
     end
 
     4'hC: begin
-      val_loc= TX_CONTROL;
+      value_location= TX_CONTROL;
     end
 
     4'hD: begin
-      val_loc= FLUSH_BUFFER;
+      value_location= FLUSH_BUFFER;
     end
   endcase
 end

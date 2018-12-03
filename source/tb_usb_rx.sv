@@ -351,11 +351,11 @@ begin
   // wait two data rate periods 
   #(USB_DATA_PERIOD);
   #(USB_DATA_PERIOD);
-  // get away from the rising clock edge
-  @(negedge tb_clk)
   // bring d_minus and d_plus back to thier idle state
   tb_dplus_in = 1'b1;
   tb_dminus_in = 1'b0;
+  // wait for one data rate period in idle state
+  #(USB_DATA_PERIOD); 
 end
 endtask
 
