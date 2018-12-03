@@ -10,7 +10,7 @@ module address_decoder(
 
   input wire [3:0] haddr_reg,
   input wire [1:0] hsize_reg,
-  output wire [3:0] value_location
+  output reg [3:0] value_location
 );
 
 // declaring buffer location signals to send as an output 
@@ -34,7 +34,7 @@ always_comb
 begin: OUTPUT_LOGIC
 
   //creating arbitrary to prevent latches
-  value_location= ERROR;
+  value_location = ERROR;
 
   case (haddr_reg)
 
