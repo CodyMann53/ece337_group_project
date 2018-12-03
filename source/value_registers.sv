@@ -32,57 +32,42 @@ module value_registers(
   output reg hold
 );
 
-// declaring data types for packet type
-typedef enum logic [2:0] {DATA,
-                          INTOKEN,
-                          OUTTOKEN,
-                          ACK,
-                          NAK,
-                          STALL
-                        }
-						packet_type;
+// declaring value location signals 
+parameter [3:0] {BUFFER4 = 4'd0, 
+                 BUFFER3 = 4'd1, 
+                 BUFFER2 = 4'd2, 
+                 BUFFER1 = 4'd3, 
+                 STATUS  = 4'd4, 
+                 STATUS_LOWER = 4'd5, 
+                 STATUS_UPPER = 4'd6, 
+                 ERROR = 4'd7, 
+                 ERROR_LOWER = 4'd8,
+                 ERROR_UPPER = 4'd9,
+                 TX_CONTROL = 4'd10,
+                 FLUSH_BUFFER = 4'd11, 
+                 BUFFER_OCCUP = 4'd12;}
 
-packet_type rx_pack;
-assign rx_pack = rx_packet;
+// declaring data types for rx_packet type
+parameter [2:0] {         OUT = 3'd0, 
+						  IN = 3'd1, 
+						  DATA0 = 3'd2, 
+						  DATA1 = 3'd3, 
+						  ACK = 3'd4, 
+						  NAK = 3'd5, 
+						  STALL = 3'd6;}
 
-// declaring data types for packet type
-typedef enum logic [1:0] {IDLE,
-                          DATA_TRANSFER,
-                          ERR
-                        }
-						state_type;
-state_type st;
-state_type txStateNext, txState; 
-assign st = state;
+// declaring data types for tx_packet
+parameter [1:0] {         ACK = 2'd0, 
+						  NAK = 2'd1, 
+						  DATA = 2'd2, 
+						  STALL = 2'd3;}
 
-// declaring data types for packet type
-typedef enum logic [1:0] {IDL,
-                          TRANSFER
-                        }
-						flush_buff_type;
+// declaring constants for state input 
+parameter [1:0] {IDLE = 2'd0,
+                 DATA_TRANSFER = 2'd1, 
+                 ERROR = 2'd2;}
 
-state_type buffStateNext, buffState;
 
-typedef enum logic [3:0] {BUFFER4,
-                          BUFFER3,
-                          BUFFER2,
-                          BUFFER1,
-                          STATUS,
-                          STATUS_LOWER,
-                          STATUS_UPPER,
-                          ERROR,
-                          ERROR_LOWER,
-                          ERROR_UPPER,
-                          TX_CONTROL,
-                          FLUSH_BUFFER,
-                          BUFFER_OCCUP
-                        }
-						location_type;
-
-location_type value_locaiton;
-assign value_location = val_loc;
-
-location_type data_state_next, data_state_reg;
 
 // internal signals
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
@@ -90,6 +75,7 @@ reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buff
 reg [6:0] buffer_occup_reg;
 reg clear_buffer_control, clear_tx_control; 
 reg [31:0] rx_data_reg, rx_data_next; 
+reg [1:0] buffStateNext, buffState, txStateNext, txState;
 
 /*D_MODE output logic */
 assign d_mode = tx_transfer_active;
@@ -103,30 +89,30 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
 
   case(buffState)
 
-  	IDL: begin 
+  	IDLE: begin 
 
   		if (flush_buffer_reg != 1'b0) begin 
 
-  			buffStateNext = TRANSFER; 
+  			buffStateNext = DATA_TRANSFER; 
 
   		end 
   		else begin  
 
-  			buffStateNext = IDL; 
+  			buffStateNext = IDLE; 
 
   		end 
   	end 
 
-  	TRANSFER: begin 
+  	DATA_TRANSFER: begin 
 
   		if ( flush_buffer_reg == 1'b0) begin 
 
-  			buffStateNext = IDL; 
+  			buffStateNext = IDLE; 
 
   		end 
   		else begin 
 
-  			buffStateNext = TRANSFER; 
+  			buffStateNext = DATA_TRANSFER; 
 
   		end 
   	end 
@@ -149,7 +135,7 @@ begin: TX_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
   		end 
   		else begin  
 
-  			txStateNext = IDL; 
+  			txStateNext = IDLE; 
 
   		end 
   	end 
@@ -176,7 +162,7 @@ begin: FLUSH_BUFFER_CONTROL_REGISTER_NEXT_STATE_LOGIC
 
   flush_buffer_reg_next = flush_buffer_reg;
 
-  if ( ( hwrite_reg == 1'b1) & (st == DATA_TRANSFER) & (value_location == FLUSH_BUFFER) ) begin
+  if ( ( hwrite_reg == 1'b1) & (st == DATA_TRANSFER) & (val_loc== FLUSH_BUFFER) ) begin
     flush_buffer_reg_next = hwdata[7:0];
   end
   else if ( clear_buffer_control == 1'b1) begin
@@ -189,7 +175,7 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
 
   status_reg_next = status_reg;
 
-  if ( (rx_data_ready == 1'b1) & (rx_pack == DATA)) begin
+  if ( (rx_data_ready == 1'b1) & (rx_packet == DATA)) begin
     status_reg_next[0] = 1'b1;
   end
   else if ( (status_reg == 1'b1) & (buffer_occupancy == 1'b0) ) begin
@@ -199,43 +185,43 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
     status_reg_next[0] = 1'b0;
   end
 
-  if ( rx_pack == INTOKEN) begin
+  if ( rx_packet == IN) begin
     status_reg_next[1] = 1'b1;
   end
   else if ( (status_reg[1] == 1'b1) & (rx_data_ready == 1'b0) )begin
     status_reg_next[1] = status_reg[1];
   end
-  else if ( (status_reg[1] == 1'b1 ) & (rx_data_ready == 1'b1) & (rx_pack != INTOKEN) ) begin
+  else if ( (status_reg[1] == 1'b1 ) & (rx_data_ready == 1'b1) & (rx_packet != IN) ) begin
     status_reg_next[1] = 1'b0;
   end
 
-  if (rx_pack == OUTTOKEN) begin
+  if (rx_packet == OUT) begin
     status_reg_next[2] = 1'b1;
   end
   else if ( ( status_reg[2] == 1'b1 ) & (rx_data_ready == 1'b0) ) begin
     status_reg_next[2] = status_reg[2];
   end
-  else if ( (status_reg[2] == 1'b1) & (rx_data_ready == 1'b1) & (rx_pack != OUTTOKEN) ) begin
+  else if ( (status_reg[2] == 1'b1) & (rx_data_ready == 1'b1) & (rx_packet != OUT) ) begin
     status_reg_next[2] = 1'b0;
   end
 
-  if ( rx_pack == ACK) begin
+  if ( rx_packet == ACK) begin
     status_reg_next[3] = 1'b1;
   end
   else if ( ( status_reg[3] == 1'b1) & (rx_data_ready == 1'b0) ) begin
     status_reg_next[3] = status_reg[3];
   end
-  else if ( ( status_reg[3] == 1'b1) & (rx_data_ready == 1'b1) & (rx_pack != ACK) ) begin
+  else if ( ( status_reg[3] == 1'b1) & (rx_data_ready == 1'b1) & (rx_packet != ACK) ) begin
     status_reg_next[3] = 1'b0;
   end
 
-  if ( rx_pack == NAK) begin
+  if ( rx_packet == NAK) begin
     status_reg_next[4] = 1'b1;
   end
   else if ( ( status_reg[4] == 1'b1) & (rx_data_ready == 1'b0) ) begin
     status_reg_next[4] = status_reg[4];
   end
-  else if ( (status_reg[4] == 1'b1) & (rx_data_ready == 1'b1) & (rx_pack != NAK) ) begin
+  else if ( (status_reg[4] == 1'b1) & (rx_data_ready == 1'b1) & (rx_packet != NAK) ) begin
     status_reg_next[4] = 1'b0;
   end
 
@@ -253,7 +239,6 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
     status_reg[6] = 1'b0;
   end
 end
-
 
 always_comb
 begin: TX_CONTROL_REGISTER_NEXT_STATE_LOGIC
@@ -303,17 +288,17 @@ begin: DATA_BUFFER_STATE_MACHINE_NEXT_STATE_LOGIC
 	case(data_state_reg) 
 
 		IDLE: begin
-			if (st == DATA_TRANSFER) begin
-				if (value_location == BUFFER4) begin
+			if (state == DATA_TRANSFER) begin
+				if (val_loc== BUFFER4) begin
 					data_state_next = BUFFER4;
 				end
-				else if (value_location == BUFFER3) begin
+				else if (val_loc== BUFFER3) begin
 					data_state_next = BUFFER3;
 				end
-				else if (value_location == BUFFER2) begin
+				else if (val_loc== BUFFER2) begin
 					data_state_next = BUFFER2;
 				end
-				else if (value_location == BUFFER1) begin
+				else if (val_loc== BUFFER1) begin
 					data_state_next = BUFFER1;
 				end
 				else begin
@@ -528,7 +513,6 @@ begin: TX_CONTROL_STATE_MACHINE_OUTPUT_LOGIC
 	end
   endcase // txState
 end
-
 
 /*REGISTER MODULE CODE */
 always_ff @ (posedge clk, negedge n_rst)

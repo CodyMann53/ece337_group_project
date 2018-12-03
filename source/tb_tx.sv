@@ -334,7 +334,7 @@ end
 endtask
 
 // send the EOP to signify done with a packet
-task send_eop
+task send_eop;
 begin
   // get away from the rising clock edge
   @(negedge tb_clk)

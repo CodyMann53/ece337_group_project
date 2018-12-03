@@ -35,13 +35,12 @@ module ahb_slave_lite_usb(
   input wire tx_error
 );
 
-/* ENUMERATION DEFINITIONS */
-typedef enum logic [1:0] {IDLE,
-                          DATA_TRANSFER, 
-                          ERROR
-                        }
-						state_type;
-state_type state, nextState; 
+/* parameter definitions */
+parameter [1:0] {IDLE = 2'd0,
+                 DATA_TRANSFER = 2'd1, 
+                 ERROR = 2'd2;}
+
+reg [1:0] state, nextState; 
 
 
 /*INTERNAL SIGNAL DEFINITIONS */
