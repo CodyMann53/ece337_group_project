@@ -371,7 +371,7 @@ begin: OUTPUT_LOGIC_READING
 			end
 
 			STATUS_LOWER: begin
-				hrdata = {24'd0, staus_reg[7:0]};
+				hrdata = {24'd0, status_reg[7:0]};
 			end
 
 			STATUS_UPPER: begin
