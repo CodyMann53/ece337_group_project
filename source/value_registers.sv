@@ -311,12 +311,13 @@ begin: DATA_BUFFER_STATE_MACHINE_NEXT_STATE_LOGIC
 					data_state_next = BUFFER2;
 				end
 				else if (value_location == BUFFER1) begin
-					data_state_next = BUFFEE1;
+					data_state_next = BUFFER1;
 				end
 				else begin
 					data_state_next = IDLE;
 				end
 			end
+		end 
 
 		BUFFER4: begin
 			data_state_next = BUFFER3;
