@@ -38,7 +38,7 @@ begin: OUTPUT_LOGIC
 
   case (haddr_reg)
 
-    0x0: begin
+    4'h0: begin
       if(hsize_reg >= 4) begin
         val_loc= BUFFER4;
       end
@@ -53,7 +53,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x1: begin
+    4'h1: begin
       if(hsize_reg >= 4) begin
         val_loc= BUFFER4;
       end
@@ -68,7 +68,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x2: begin
+    4'h2: begin
       if(hsize_reg >= 4) begin
         val_loc= BUFFER4;
       end
@@ -83,7 +83,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x3: begin
+    4'h3: begin
       if(hsize_reg >= 4) begin
         val_loc= BUFFER4;
       end
@@ -98,7 +98,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x4: begin
+    4'h4: begin
       if( hsize_reg >= 2) begin
         value_locaiton = STATUS;
       end
@@ -107,7 +107,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x5: begin
+    4'h5: begin
       if (hsize_reg >= 2) begin
         val_loc= STATUS;
       end
@@ -116,7 +116,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x6: begin
+    4'h6: begin
       if (hsize_reg >= 2) begin
         val_loc= ERROR
       end
@@ -125,7 +125,7 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x7: begin
+    4'h7: begin
       if (hsize_reg >= 2) begin
         val_loc= ERROR;
       end
@@ -134,15 +134,15 @@ begin: OUTPUT_LOGIC
       end
     end
 
-    0x8: begin
+    4'h8: begin
       value_locaiton = BUFFER_OCCUP;
     end
 
-    0xC: begin
+    4'hC: begin
       val_loc= TX_CONTROL;
     end
 
-    0xD: begin
+    4'hD: begin
       val_loc= FLUSH_BUFFER;
     end
   endcase
