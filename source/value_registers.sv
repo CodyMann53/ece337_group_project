@@ -55,7 +55,7 @@ assign st = state;
 
 // declaring data types for packet type
 typedef enum logic [1:0] {IDL,
-                          TRANSFER,
+                          TRANSFER
                         }
 						flush_buff_type;
 
@@ -79,15 +79,7 @@ typedef enum logic [3:0] {BUFFER4,
 location_type value_locaiton;
 assign value_location = val_loc;
 
-// signal information for the data buffer state machine
-typedef enum logic [2:0] {BUFFER4,
-						  BUFFER3,
-						  BUFFER2,
-						  BUFFER1,
-						  IDLE}
-						  buffer_state_machine_type;
-
-buffer_state_machine_type data_state_next, data_state_reg;
+location_type data_state_next, data_state_reg;
 
 // internal signals
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
