@@ -28,7 +28,7 @@ module ahb_slave_lite_usb(
   input wire [7:0] rx_data, 
   output reg get_rx_data, 
   output reg store_tx_data, 
-  output reg [6:0] tx_data, 
+  output reg [7:0] tx_data, 
   output reg clear, 
   output reg [1:0] tx_packet, 
   input wire tx_transfer_active, 
