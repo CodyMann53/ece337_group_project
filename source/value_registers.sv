@@ -463,7 +463,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_OUTPUT_LOGIC
 
   case(buffState)
 
-  	TRANSFER: begin 
+  	DATA_TRANSFER: begin 
 
   		clear = 1'b1; 
   		clear_buffer_control = 1'b1; 
