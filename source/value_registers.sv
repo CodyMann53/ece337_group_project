@@ -85,7 +85,7 @@ location_type data_state_next, data_state_reg;
 
 // internal signals
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
-reg [7:0] tx_control_reg, tx_control_reg_next, flush_buff_reg_next, flush_buff_reg;
+reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buffer_reg;
 reg [6:0] buffer_occup_reg;
 reg clear_buffer_control, clear_tx_control; 
 reg [31:0] rx_data_reg, rx_data_next; 
@@ -399,7 +399,7 @@ begin: OUTPUT_LOGIC_READING
 			end
 
 			FLUSH_BUFFER: begin
-				hrdata = {24'd0, flush_buff_reg};
+				hrdata = {24'd0, flush_buffer_reg};
 			end
 		endcase
 end
@@ -537,7 +537,7 @@ begin: REGISTER_LOGIC
     	error_reg <= 'd0;
     	buffer_occup_reg <= 'd0;
     	tx_control_reg <= 'd0;
-    	flush_buff_reg <= 'd0;
+    	flush_buffer_reg <= 'd0;
     	rx_data_reg <= 'd0
 	end
 	else begin
@@ -545,7 +545,7 @@ begin: REGISTER_LOGIC
 	    error_reg <= error_reg_next;
 	    buffer_occup_reg <= buffer_occupancy;
 	    tx_control_reg <= tx_control_reg_next;
-	    flush_buff_reg <= flush_buffer_reg_next;
+	    flush_buffer_reg <= flush_buffer_reg_next;
 	    rx_data_reg <= rx_data_next;
 	end
 end
