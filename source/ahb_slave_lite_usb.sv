@@ -36,9 +36,9 @@ module ahb_slave_lite_usb(
 );
 
 /* parameter definitions */
-parameter [1:0] {IDLE = 2'd0,
+parameter [1:0] IDLE = 2'd0,
                  DATA_TRANSFER = 2'd1, 
-                 ERROR = 2'd2;}
+                 ERROR = 2'd2;
 
 reg [1:0] state, nextState; 
 
