@@ -76,6 +76,7 @@ reg [6:0] buffer_occup_reg;
 reg clear_buffer_control, clear_tx_control; 
 reg [31:0] rx_data_reg, rx_data_next; 
 reg [1:0] buffStateNext, buffState, txStateNext, txState;
+reg [3:0] data_state_next, data_state_reg;
 
 /*D_MODE output logic */
 assign d_mode = tx_transfer_active;
