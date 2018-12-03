@@ -33,7 +33,7 @@ module value_registers(
 );
 
 // declaring value location signals 
-parameter [3:0] {BUFFER4 = 4'd0, 
+parameter [3:0] BUFFER4 = 4'd0, 
                  BUFFER3 = 4'd1, 
                  BUFFER2 = 4'd2, 
                  BUFFER1 = 4'd3, 
@@ -45,27 +45,27 @@ parameter [3:0] {BUFFER4 = 4'd0,
                  ERROR_UPPER = 4'd9,
                  TX_CONTROL = 4'd10,
                  FLUSH_BUFFER = 4'd11, 
-                 BUFFER_OCCUP = 4'd12}; 
+                 BUFFER_OCCUP = 4'd12; 
 
 // declaring data types for rx_packet type
-parameter [2:0] {         OUT = 3'd0, 
+parameter [2:0]           OUT = 3'd0, 
 						  IN = 3'd1, 
 						  DATA0 = 3'd2, 
 						  DATA1 = 3'd3, 
 						  ACK = 3'd4, 
 						  NAK = 3'd5, 
-						  STALL = 3'd6}; 
+						  STALL = 3'd6; 
 
 // declaring data types for tx_packet
-parameter [1:0] {         ACK = 2'd0, 
+parameter [1:0]          ACK = 2'd0, 
 						  NAK = 2'd1, 
 						  DATA = 2'd2, 
-						  STALL = 2'd3}; 
+						  STALL = 2'd3; 
 
 // declaring constants for state input 
-parameter [1:0] {IDLE = 2'd0,
+parameter [1:0]  IDLE = 2'd0,
                  DATA_TRANSFER = 2'd1, 
-                 ERROR = 2'd2}; 
+                 ERROR = 2'd2; 
 
 
 
