@@ -237,7 +237,7 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
     status_reg_next[6] = 1'b1;
   end
   else begin
-    status_reg[6] = 1'b0;
+    status_reg_next[6] = 1'b0;
   end
 end
 
