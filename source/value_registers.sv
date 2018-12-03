@@ -54,7 +54,7 @@ state_type st;
 assign st = state;
 
 // declaring data types for packet type
-typedef enum logic [1:0] {IDLE,
+typedef enum logic [1:0] {IDL,
                           TRANSFER,
                         }
 						flush_buff_type;
@@ -106,7 +106,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
 
   case(buffState)
 
-  	IDLE: begin 
+  	IDL: begin 
 
   		if (flush_buffer_reg != 1'b0) begin 
 
@@ -115,7 +115,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
   		end 
   		else begin  
 
-  			buffStateNext = IDLE; 
+  			buffStateNext = IDL; 
 
   		end 
   	end 
@@ -124,7 +124,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_NEXT_STATE_LOGIC
 
   		if ( flush_buffer_reg == 1'b0) begin 
 
-  			buffStateNext = IDLE; 
+  			buffStateNext = IDL; 
 
   		end 
   		else begin 
@@ -479,7 +479,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_REGISTER
 	// if reset negation is applied
 	if (1'b0 == n_rst ) begin
 
-    	buffState <= IDLE;
+    	buffState <= IDL;
 
 	end
 	else begin
