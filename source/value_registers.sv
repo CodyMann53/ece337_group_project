@@ -47,7 +47,7 @@ assign rx_pack = rx_packet;
 // declaring data types for packet type
 typedef enum logic [1:0] {IDLE,
                           DATA_TRANSFER,
-                          ERROR
+                          ERR
                         }
 						state_type;
 state_type st;
@@ -261,7 +261,7 @@ begin: DATA_BUFFER_STATE_MACHINE_NEXT_STATE_LOGIC
 	case(data_state_reg) begin
 
 		IDLE: begin
-			if (state == DATA_TRANSFER) begin
+			if (st == DATA_TRANSFER) begin
 				if (value_location == BUFFER4) begin
 					data_state_next = BUFFER4;
 				end
@@ -304,7 +304,7 @@ begin: OUTPUT_LOGIC_READING
 	// assigning arbitrary values to prevent latches
 	hrdata = 32'd0;
 
-	if ( ( hwrite_reg == 1'b0 ) & (state == DATA_TRANSFER) ) begin
+	if ( ( hwrite_reg == 1'b0 ) & (st == DATA_TRANSFER) ) begin
 
 		case(value_location)
 
