@@ -175,7 +175,7 @@ begin: STATUS_REGISTER_NEXT_STATE_LOGIC
 
   status_reg_next = status_reg;
 
-  if ( (rx_data_ready == 1'b1) & (rx_packet == DATA)) begin
+  if ( (rx_data_ready == 1'b1) & ((rx_packet == DATA0) | (rx_packet == DATA1)) begin
     status_reg_next[0] = 1'b1;
   end
   else if ( (status_reg == 1'b1) & (buffer_occupancy == 1'b0) ) begin
