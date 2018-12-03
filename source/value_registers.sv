@@ -57,10 +57,10 @@ parameter [2:0]           OUT = 3'd0,
 						  STALL = 3'd6; 
 
 // declaring data types for tx_packet
-parameter [1:0]          ACK = 2'd0, 
-						  NAK = 2'd1, 
-						  DATA = 2'd2, 
-						  STALL = 2'd3; 
+parameter [1:0]          ACK_TX = 2'd0, 
+						  NAK_TX = 2'd1, 
+						  DATA_TX = 2'd2, 
+						  STALL_TX = 2'd3; 
 
 // declaring constants for state input 
 parameter [1:0]  IDLE = 2'd0,
@@ -162,7 +162,7 @@ begin: FLUSH_BUFFER_CONTROL_REGISTER_NEXT_STATE_LOGIC
 
   flush_buffer_reg_next = flush_buffer_reg;
 
-  if ( ( hwrite_reg == 1'b1) & (st == DATA_TRANSFER) & (val_loc== FLUSH_BUFFER) ) begin
+  if ( ( hwrite_reg == 1'b1) & (state == DATA_TRANSFER) & (val_loc== FLUSH_BUFFER) ) begin
     flush_buffer_reg_next = hwdata[7:0];
   end
   else if ( clear_buffer_control == 1'b1) begin
@@ -245,7 +245,7 @@ begin: TX_CONTROL_REGISTER_NEXT_STATE_LOGIC
 
   tx_control_reg_next = tx_control_reg;
 
-  if ( (hwrite_reg == 1'b1) & (st == DATA_TRANSFER) & (TX_CONTROL) ) begin
+  if ( (hwrite_reg == 1'b1) & (state == DATA_TRANSFER) & (TX_CONTROL) ) begin
     tx_control_reg_next = hwdata[7:0];
   end
   else if (clear_tx_control == 1'b1) begin
@@ -332,9 +332,9 @@ begin: OUTPUT_LOGIC_READING
 	// assigning arbitrary values to prevent latches
 	hrdata = 32'd0;
 
-	if ( ( hwrite_reg == 1'b0 ) & (st == DATA_TRANSFER) ) begin
+	if ( ( hwrite_reg == 1'b0 ) & (state == DATA_TRANSFER) ) begin
 
-		case(value_location)
+		case(val_loc)
 
 			BUFFER4: begin
 				hrdata = rx_data_reg;
@@ -489,24 +489,24 @@ begin: TX_CONTROL_STATE_MACHINE_OUTPUT_LOGIC
 
 					if (buffer_occup_reg > 7'd0) begin 
 
-							tx_packet = DATA; 
+							tx_packet = DATA_TX; 
 
 					end 
 				end 
 
 				8'd2: begin 
 
-					tx_packet = ACK; 
+					tx_packet = ACK_TX; 
 				end 
 
 				8'd3: begin 
 
-					tx_packet = NAK; 
+					tx_packet = NAK_TX; 
 				end 
 
 				8'd4: begin 
 
-					tx_packet = STALL; 
+					tx_packet = STALL_TX; 
 				end 
 			endcase // tx_control_reg
 		end 
@@ -541,7 +541,7 @@ begin: FLUSH_BUFFER_CONTROL_STATE_MACHINE_REGISTER
 	// if reset negation is applied
 	if (1'b0 == n_rst ) begin
 
-    	buffState <= IDL;
+    	buffState <= IDLE;
 
 	end
 	else begin
