@@ -37,7 +37,8 @@ typedef enum logic [2:0] {DATA,
                           INTOKEN,
                           OUTTOKEN,
                           ACK,
-                          NAK
+                          NAK,
+                          STALL
                         }
 						packet_type;
 
@@ -539,10 +540,10 @@ begin: REGISTER_LOGIC
     	buffer_occup_reg <= 'd0;
     	tx_control_reg <= 'd0;
     	flush_buffer_reg <= 'd0;
-    	rx_data_reg <= 'd0
+    	rx_data_reg <= 'd0;
 	end
 	else begin
-    	status_reg <= status_reg_next
+    	status_reg <= status_reg_next;
 	    error_reg <= error_reg_next;
 	    buffer_occup_reg <= buffer_occupancy;
 	    tx_control_reg <= tx_control_reg_next;
