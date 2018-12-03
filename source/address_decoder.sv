@@ -17,13 +17,15 @@ typedef enum logic [3:0] {BUFFER4,
                           BUFFER3,
                           BUFFER2,
                           BUFFER1,
+                          STATUS,
                           STATUS_LOWER,
                           STATUS_UPPER,
                           ERROR,
                           ERROR_LOWER,
                           ERROR_UPPER,
                           TX_CONTROL,
-                          FLUSH_BUFFER
+                          FLUSH_BUFFER, 
+                          BUFFER_OCCUP
                         }
 						location_type;
 
@@ -100,10 +102,10 @@ begin: OUTPUT_LOGIC
 
     4'h4: begin
       if( hsize_reg >= 2) begin
-        value_locaiton = STATUS;
+        val_loc= STATUS;
       end
       else begin
-        value_locaiton = STATUS_LOWER;
+        val_loc = STATUS_LOWER;
       end
     end
 
@@ -118,7 +120,7 @@ begin: OUTPUT_LOGIC
 
     4'h6: begin
       if (hsize_reg >= 2) begin
-        val_loc= ERROR
+        val_loc= ERROR;
       end
       else begin
         val_loc= ERROR_LOWER;
@@ -135,7 +137,7 @@ begin: OUTPUT_LOGIC
     end
 
     4'h8: begin
-      value_locaiton = BUFFER_OCCUP;
+      val_loc = BUFFER_OCCUP;
     end
 
     4'hC: begin
