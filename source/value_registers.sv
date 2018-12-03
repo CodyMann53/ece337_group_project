@@ -85,7 +85,7 @@ location_type data_state_next, data_state_reg;
 
 // internal signals
 reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
-reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buffer_reg;
+reg [7:0] tx_control_reg, tx_control_reg_next, flush_buff_reg_next, flush_buff_reg;
 reg [6:0] buffer_occup_reg;
 reg clear_buffer_control, clear_tx_control; 
 reg [31:0] rx_data_reg, rx_data_next; 
@@ -371,7 +371,7 @@ begin: OUTPUT_LOGIC_READING
 			end
 
 			STATUS_LOWER: begin
-				hrdata = {24'd0, sttaus_reg[7:0]};
+				hrdata = {24'd0, staus_reg[7:0]};
 			end
 
 			STATUS_UPPER: begin
