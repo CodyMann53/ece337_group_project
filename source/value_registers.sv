@@ -28,8 +28,7 @@ module value_registers(
   output reg [7:0] tx_data,
   output reg [1:0] tx_packet,
   output reg clear,
-  output reg [31:0] hrdata,
-  output reg hold
+  output reg [31:0] hrdata
 );
 
 // declaring value location signals 
@@ -45,7 +44,8 @@ parameter [3:0] BUFFER4 = 4'd0,
                  ERROR_UPPER = 4'd9,
                  TX_CONTROL = 4'd10,
                  FLUSH_BUFFER = 4'd11, 
-                 BUFFER_OCCUP = 4'd12; 
+                 BUFFER_OCCUP = 4'd12, 
+                 DEFAULT = 4'd13; 
 
 // declaring data types for rx_packet type
 parameter [2:0]           OUT = 3'd0, 
@@ -67,6 +67,15 @@ parameter [1:0]  IDLE = 2'd0,
                  DATA_TRANSFER = 2'd1, 
                  ERR = 2'd2; 
 
+parameter [4:0] BYTE1 = 5'd0, 
+				BYTE2 = 5'd1, 
+				BYTE3 = 5'd2, 
+				BYTE4 = 5'd3, 
+				DATA_IDLE = 5'd6,
+				R_BYTE1 = 5'd7, 
+				R_BYTE2 = 5'd8, 
+				R_BYTE3 = 5'd9, 
+				R_BYTE4 = 5'd10; 
 
 
 // internal signals
@@ -74,9 +83,9 @@ reg [15:0] status_reg, status_reg_next, error_reg, error_reg_next;
 reg [7:0] tx_control_reg, tx_control_reg_next, flush_buffer_reg_next, flush_buffer_reg;
 reg [6:0] buffer_occup_reg;
 reg clear_buffer_control, clear_tx_control; 
-reg [31:0] rx_data_reg, rx_data_next; 
+reg [31:0] rx_data_reg, rx_data_next, hwdata_reg, hwdata_next; 
 reg [1:0] buffStateNext, buffState, txStateNext, txState;
-reg [3:0] data_state_next, data_state_reg;
+reg [4:0] data_state_next, data_state_reg, data_state_prev;
 
 /*D_MODE output logic */
 assign d_mode = tx_transfer_active;
@@ -280,49 +289,89 @@ begin: ERROR_REGISTER_NEXT_STATE_LOGIC
   end
 end
 
+always_comb 
+begin: HWDATA_NEXT_STATE
+
+	hwdata_next = hwdata_reg; 
+
+	if ( (data_state_next != DATA_IDLE) & (data_state_reg == DATA_IDLE)) begin 
+		hwdata_next = hwdata;
+	end 
+end 
+
 always_comb
 begin: DATA_BUFFER_STATE_MACHINE_NEXT_STATE_LOGIC
 
+
 	// assigning arbitrary values to prevent latches
 	data_state_next = data_state_reg;
-
 	case(data_state_reg) 
 
-		IDLE: begin
+		DATA_IDLE: begin
 			if (state == DATA_TRANSFER) begin
-				if (val_loc== BUFFER4) begin
-					data_state_next = BUFFER4;
+				if (val_loc == BUFFER4) begin
+					if (hwrite_reg == 1'b1) begin 
+						data_state_next = BYTE4;
+					end 
+					else begin 
+						data_state_next = R_BYTE4;
+					end 
 				end
-				else if (val_loc== BUFFER3) begin
-					data_state_next = BUFFER3;
+				if (val_loc== BUFFER2) begin
+					if (hwrite_reg == 1'b1) begin 
+						data_state_next = BYTE2;
+					end 
+					else begin 
+						data_state_next = R_BYTE2;
+					end 
 				end
-				else if (val_loc== BUFFER2) begin
-					data_state_next = BUFFER2;
-				end
-				else if (val_loc== BUFFER1) begin
-					data_state_next = BUFFER1;
+				if (val_loc== BUFFER1) begin
+					if (hwrite_reg == 1'b1) begin 
+						data_state_next = BYTE1;
+					end 
+					else begin 
+						data_state_next = R_BYTE1;
+					end 
 				end
 				else begin
-					data_state_next = IDLE;
+					data_state_next = DATA_IDLE;
 				end
 			end
 		end 
 
-		BUFFER4: begin
-			data_state_next = BUFFER3;
-		end
+		//write stattes
+		BYTE4: begin 
+			data_state_next = BYTE3; 
+		end 
 
-		BUFFER3: begin
-			data_state_next = BUFFER2;
-		end
+		BYTE3: begin 
+			data_state_next = BYTE2; 
+		end 
 
-		BUFFER2: begin
-			data_state_next = BUFFER1;
-		end
+		BYTE2: begin 
+			data_state_next = BYTE1; 
+		end 
 
-		BUFFER1: begin
-			data_state_next = IDLE;
-		end
+		BYTE1: begin 
+			data_state_next = DATA_IDLE; 
+		end 
+
+		//read stattes
+		R_BYTE4: begin 
+			data_state_next = R_BYTE3; 
+		end 
+
+		R_BYTE3: begin 
+			data_state_next = R_BYTE2; 
+		end 
+
+		R_BYTE2: begin 
+			data_state_next = R_BYTE1; 
+		end 
+
+		R_BYTE1: begin 
+			data_state_next = DATA_IDLE; 
+		end 
 	endcase // data_state_reg
 end
 
@@ -342,7 +391,7 @@ begin: OUTPUT_LOGIC_READING
 			end // BUFFER4:
 
 			BUFFER3: begin
-				hrdata <= {8'd0, rx_data_reg[23:0]};
+				hrdata = {8'd0, rx_data_reg[23:0]};
 			end // BUFFER3:
 
 			BUFFER2: begin
@@ -400,59 +449,21 @@ begin: DATA_BUFFER_OUTPUT_LOGIC
 	store_tx_data = 'd0;
 	tx_data = 'd0;
 	rx_data_next = rx_data_reg;
-	hold = 0;
 
-	case(data_state_reg)
-
-		BUFFER4: begin
-			hold = 1'b1;
-			if (hwrite_reg == 1'b1) begin
-				store_tx_data = 1'b1;
-				tx_data = hwdata[7:0];
-			end
-			else begin
-				get_rx_data = 1'b1;
-				rx_data_next = {rx_data_reg[31:8], rx_data};
-			end
-		end
-
-		BUFFER3: begin
-			hold = 1'b1;
-			if (hwrite_reg == 1'b1) begin
-				store_tx_data = 1'b1;
-				tx_data = hwdata[15:7];
-			end
-			else begin
-				get_rx_data = 1'b1;
-				rx_data_next = {rx_data_reg[31:16], rx_data, rx_data_reg[7:0]};
-			end
-		end
-
-		BUFFER2: begin
-			hold = 1'b1;
-			if (hwrite_reg == 1'b1) begin
-				store_tx_data = 1'b1;
-				tx_data = hwdata[23:16];
-			end
-			else begin
-				get_rx_data = 1'b1;
-				rx_data_next = {rx_data_reg[31:24], rx_data, rx_data_reg[15:0]};
-			end
-		end
-
-
-		BUFFER1: begin
-			hold = 1'b1;
-			if (hwrite_reg == 1'b1) begin
-				store_tx_data = 1'b1;
-				tx_data = hwdata[31:24];
-			end
-			else begin
-				get_rx_data = 1'b1;
-				rx_data_next = {rx_data, rx_data_reg[23:0]};
-			end
-		end
-	endcase
+	if ((data_state_reg == BYTE1) |
+		(data_state_reg == BYTE2) |
+		(data_state_reg == BYTE3) |
+		(data_state_reg == BYTE4)) begin 
+		store_tx_data = 1'b1; 
+		tx_data = hwdata_reg[7:0]; 
+	end 
+	else if ((data_state_reg == R_BYTE1) |
+		(data_state_reg == R_BYTE2) |
+		(data_state_reg == R_BYTE3) |
+		(data_state_reg == R_BYTE4)) begin 
+		get_rx_data = 1'b1; 
+		rx_data_next = {24'd0, rx_data}; 
+	end
 end
 
 always_comb
@@ -571,11 +582,23 @@ always_ff @ (posedge clk, negedge n_rst)
 begin: DATA_BUFFER_STATE_REGISTER_LOGIC
 	// if reset negation is applied
 	if (1'b0 == n_rst ) begin
-    	data_state_reg <= IDLE;
+    	data_state_reg <= DATA_IDLE;
 	end
 	else begin
     	data_state_reg <= data_state_next;
+    	data_state_prev <= data_state_reg; 
 	end
 end
 
-endmodule // value_registers
+always_ff @ (posedge clk, negedge n_rst)
+begin: HWDATA_REGISTER
+	// if reset negation is applied
+	if (1'b0 == n_rst ) begin
+    	hwdata_reg <= 32'd0;
+	end
+	else begin
+    	hwdata_reg <= hwdata_next;
+	end
+end
+
+endmodule // hwdata register 

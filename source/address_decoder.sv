@@ -10,6 +10,8 @@ module address_decoder(
 
   input wire [3:0] haddr_reg,
   input wire [1:0] hsize_reg,
+  input wire [1:0] state, 
+  input wire hsel,
   output reg [3:0] value_location
 );
 
@@ -26,126 +28,121 @@ parameter [3:0] BUFFER4 = 4'd0,
                  ERROR_UPPER = 4'd9,
                  TX_CONTROL = 4'd10,
                  FLUSH_BUFFER = 4'd11, 
-                 BUFFER_OCCUP = 4'd12; 
+                 BUFFER_OCCUP = 4'd12, 
+                 DEFAULT = 4'd13; 
 
+/* parameter definitions */
+parameter [1:0] IDLE = 2'd0,
+                 DATA_TRANSFER = 2'd1; 
 
 
 always_comb
 begin: OUTPUT_LOGIC
 
   //creating arbitrary to prevent latches
-  value_location = ERROR;
+  value_location = DEFAULT;
 
-  case (haddr_reg)
+  if ( (state == DATA_TRANSFER) & (hsel == 1'b1)) begin 
 
-    4'h0: begin
-      if(hsize_reg >= 4) begin
-        value_location= BUFFER4;
-      end
-      else if (hsize_reg == 3) begin
-        value_location= BUFFER3;
-      end
-      else if (hsize_reg == 2) begin
-        value_location= BUFFER2;
-      end
-      else begin
-        value_location= BUFFER1;
-      end
-    end
+    case (haddr_reg)
 
-    4'h1: begin
-      if(hsize_reg >= 4) begin
-        value_location= BUFFER4;
+      4'h0: begin
+        if( hsize_reg == 2'd2) begin
+          value_location= BUFFER4;
+        end
+        else if (hsize_reg == 2'd1) begin
+          value_location= BUFFER2;
+        end
+        else if (hsize_reg == 2'd0) begin
+          value_location = BUFFER1;
+        end
       end
-      else if (hsize_reg == 3) begin
-        value_location= BUFFER3;
-      end
-      else if (hsize_reg == 2) begin
-        value_location= BUFFER2;
-      end
-      else begin
-        value_location= BUFFER1;
-      end
-    end
 
-    4'h2: begin
-      if(hsize_reg >= 4) begin
-        value_location= BUFFER4;
+      4'h1: begin
+        if(hsize_reg >= 2'd2) begin
+          value_location= BUFFER4;
+        end
+        else if (hsize_reg == 2'd1) begin
+          value_location= BUFFER2;
+        end
+        else if (hsize_reg == 2'd0) begin
+          value_location= BUFFER1;
+        end
       end
-      else if (hsize_reg == 3) begin
-        value_location= BUFFER3;
-      end
-      else if (hsize_reg == 2) begin
-        value_location= BUFFER2;
-      end
-      else begin
-        value_location= BUFFER1;
-      end
-    end
 
-    4'h3: begin
-      if(hsize_reg >= 4) begin
-        value_location= BUFFER4;
+      4'h2: begin
+        if(hsize_reg >= 2'd2) begin
+          value_location= BUFFER4;
+        end
+        else if (hsize_reg == 2'd1) begin
+          value_location= BUFFER2;
+        end
+        else if (hsize_reg == 2'd0) begin
+          value_location= BUFFER1;
+        end
       end
-      else if (hsize_reg == 3) begin
-        value_location= BUFFER3;
-      end
-      else if (hsize_reg == 2) begin
-        value_location= BUFFER2;
-      end
-      else begin
-        value_location= BUFFER1;
-      end
-    end
 
-    4'h4: begin
-      if( hsize_reg >= 2) begin
-        value_location= STATUS;
+      4'h3: begin
+        if(hsize_reg >= 2'd2) begin
+          value_location= BUFFER4;
+        end
+        else if (hsize_reg == 2'd1) begin
+          value_location= BUFFER2;
+        end
+        else if (hsize_reg == 2'd0) begin
+          value_location= BUFFER1;
+        end
       end
-      else begin
-        value_location = STATUS_LOWER;
-      end
-    end
 
-    4'h5: begin
-      if (hsize_reg >= 2) begin
-        value_location= STATUS;
+      4'h4: begin
+        if( hsize_reg >= 2'd2) begin
+          value_location= STATUS;
+        end
+        else begin
+          value_location = STATUS_LOWER;
+        end
       end
-      else begin
-        value_location= STATUS_UPPER;
-      end
-    end
 
-    4'h6: begin
-      if (hsize_reg >= 2) begin
-        value_location= ERROR;
+      4'h5: begin
+        if (hsize_reg >= 2'd2) begin
+          value_location= STATUS;
+        end
+        else begin
+          value_location= STATUS_UPPER;
+        end
       end
-      else begin
-        value_location= ERROR_LOWER;
+
+      4'h6: begin
+        if (hsize_reg >= 2'd2) begin
+          value_location= ERROR;
+        end
+        else begin
+          value_location= ERROR_LOWER;
+        end
       end
-    end
 
-    4'h7: begin
-      if (hsize_reg >= 2) begin
-        value_location= ERROR;
+      4'h7: begin
+        if (hsize_reg >= 2'd2) begin
+          value_location= ERROR;
+        end
+        else begin
+          value_location= ERROR_UPPER;
+        end
       end
-      else begin
-        value_location= ERROR_UPPER;
+
+      4'h8: begin
+        value_location = BUFFER_OCCUP;
       end
-    end
 
-    4'h8: begin
-      value_location = BUFFER_OCCUP;
-    end
+      4'hC: begin
+        value_location= TX_CONTROL;
+      end
 
-    4'hC: begin
-      value_location= TX_CONTROL;
-    end
-
-    4'hD: begin
-      value_location= FLUSH_BUFFER;
-    end
+      4'hD: begin
+        value_location= FLUSH_BUFFER;
+      end
   endcase
+ end 
 end
 
 endmodule // address_decoder

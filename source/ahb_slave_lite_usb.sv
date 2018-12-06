@@ -7,7 +7,7 @@
 // Description: This is the overarching module for the ahb lite slave module to be interfaced with usb recieving and transmitting devices.
 
 module ahb_slave_lite_usb(
-
+  // AHB-Lite slave side signals 
   input wire clk,
   input wire n_rst,
   input wire hsel, 
@@ -19,6 +19,7 @@ module ahb_slave_lite_usb(
   output reg [31:0] hrdata, 
   output reg hresp, 
   output reg hready, 
+  // USB side signals 
   input wire [2:0] rx_packet, 
   input wire rx_data_ready, 
   input wire rx_transfer_active, 
@@ -52,7 +53,9 @@ reg [3:0] value_location;
 /* WRAPPER DEFINITIONS */
 address_decoder DECODER(.haddr_reg(haddr_reg), 
 						.hsize_reg(hsize_reg), 
-						.value_location(value_location)
+						.value_location(value_location), 
+						.hsel(hsel),
+						.state(state)
 						); 
 
 value_registers VAL_REG(.clk(clk), 
@@ -75,8 +78,7 @@ value_registers VAL_REG(.clk(clk),
 						.tx_data(tx_data), 
 						.tx_packet(tx_packet), 
 						.clear(clear),
-						.hrdata(hrdata), 
-						.hold(hold)
+						.hrdata(hrdata) 
 						); 
 
 /* STATE_MACHINE_CODE */
@@ -93,6 +95,9 @@ begin: NEXT_STATE_LOGIC
 			end
 			else if ( (haddr > 4'h8) & (haddr < 4'hC) ) begin
 				nextState = ERROR;
+			end 
+			else if ((haddr < 4'd4) & (hsize > 2'd2)) begin 
+				nextState = ERROR; 
 			end 
 			else if ((hsel == 1'b1) & (htrans == 2'd2)) begin 
 				nextState = DATA_TRANSFER; 
@@ -133,26 +138,26 @@ begin: ERROR_OUTPUT_LOGIC
 				hresp = 1'b1; 
 				hready = 1'b0; 
 			end 
-			else if (hwrite == 1'b1) begin 
-				if ( (haddr >= 4'h4 ) & (haddr < 4'hC)) begin 
-					hresp = 1'b1; 
-					hready = 1'b0; 
-				end 
+			else if ( (hwrite == 1'b1) & (haddr >= 4'h4 ) & (haddr < 4'hC)) begin 
+				hresp = 1'b1; 
+				hready = 1'b0; 
 			end 
 			else if ( (haddr > 4'h8) & (haddr < 4'hC)) begin 
-					hready = 1'b0; 
-					hresp = 1'b1; 
+				hready = 1'b0; 
+				hresp = 1'b1; 
+			end
+			else if ((hsel == 1'b1) & (htrans == 2'd2)) begin 
+				hready = 1'b1; 
 			end 
 		end 
 
 		DATA_TRANSFER: begin  
-			if (hold == 1'b1) begin 
-				hready = 1'b1; 
-			end 
-			else begin 
-				hresp = 1'b1; 
-				hready = 1'b1; 
-			end 
+			hready = 1'b1; 
+		end 
+
+		ERROR: begin 
+			hresp = 1'b1; 
+			hready = 1'b1; 
 		end 
 	endcase
 end
